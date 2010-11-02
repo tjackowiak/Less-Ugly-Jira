@@ -19,7 +19,7 @@
 // @namespace     http://github.com/tjackowiak
 // @description   Makes JIRA a little less ugly
 // @include       *jira*/browse/*-*
-// @version       0.1
+// @version       0.2
 // ==/UserScript==
 
 
@@ -31,7 +31,16 @@ const config ={
    "switchColumns"     : true,
    // usuwanie naglowkow przy malej ilosci tekstu
    "removeFieldsTabs"  : true,
+   // kliniecie "komentarz" na gornej belce przekierowuje
+   // do dolnego boksa
+   "commentOnBottom"   : true,
 }
+
+/**
+ * Na poczatek upewnijmy sie, że wszyscy mowimy
+ * wspolnym jezykiem
+ */
+browsersCompatibility();
 
 /**
  * Dorzucmy nieco stylu
@@ -161,6 +170,17 @@ rCol = document.getElementById('secondary').firstElementChild
 rCol.insertBefore(tmp, rCol.firstElementChild)
 
 /**
+ * Pozostalo wykonac wstrzykniecie
+ * Ciii, nie bedzie bolalo ;)
+ */
+var inject = document.createElement("script");
+inject.setAttribute("type", "text/javascript");
+inject.appendChild(document.createTextNode("var removeFieldsTabs="+config["removeFieldsTabs"]+";"));
+inject.appendChild(document.createTextNode("var commentOnBottom="+config["commentOnBottom"]+";"));
+inject.appendChild(document.createTextNode("(" + makeMagic + ")()"));
+document.body.appendChild(inject);
+
+/**
  * Czesc rzeczy wymaga jQuery. Znaczy nie wymaga, ale tak jest prosciej,
  * wiec wstrzykniemy je na koniec strony gdy domyslne skrypty JIRA
  * juz sie zaladowaly
@@ -205,14 +225,45 @@ function makeMagic(){
        */
       showTab(1);
    }
+
+   /**
+    * Przekeirowujemy klikniecie w "Komentarz" na gornej belce
+    * do formularza na dole strony
+    */
+   if(commentOnBottom){
+      $(document).ready(function(){
+         $("#comment-issue").unbind();
+         $("#comment-issue").bind("click", function(){
+               $("#footer-comment-button").triggerHandler("click");
+               $(window).scrollTop($(window).scrollTop()+$("#addcomment").outerHeight());
+               return false;
+            })
+      })
+   }
+   
 }
 
 /**
- * Pozostalo wykonac wstrzykniecie
- * Ciii, nie bedzie bolalo ;)
+ * Hej hej hej, hej hej hej 
+ * Inni mają jeszcze gorzej 
+ * Hej hej hej, hej hej hej 
+ * Ale nie da ukryć się, że są tacy, którym jest lepiej 
+ *
+ * I tym co mają gorzej staramy się wyrownać szanse
  */
-var inject = document.createElement("script");
-inject.setAttribute("type", "text/javascript");
-inject.appendChild(document.createTextNode("var removeFieldsTabs="+config["removeFieldsTabs"]+";"));
-inject.appendChild(document.createTextNode("(" + makeMagic + ")()"));
-document.body.appendChild(inject);
+function browsersCompatibility()
+{
+   // Define GM_addStyle for compatibility with Opera 
+   // http://www.howtocreate.co.uk/operaStuff/userjs/aagmfunctions.js
+   if(typeof GM_addStyle == "undefined"){
+      this.GM_addStyle=function (css){
+         var heads = document.getElementsByTagName("head");
+         if(heads.length > 0){
+            var node = document.createElement("style");
+            node.type = "text/css";
+            node.appendChild(document.createTextNode(css));
+            heads[0].appendChild(node); 
+         }
+      }
+   }
+}
