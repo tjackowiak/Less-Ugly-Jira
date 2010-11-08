@@ -185,6 +185,8 @@ var issueView = {
     * juz sie zaladowaly
     */
    makeMagic: function (){
+
+      $=window.jQuery;
       /**
        * Opis zadania wymaga ladniejszej oprawy
        * der ju goł
@@ -240,6 +242,45 @@ var issueView = {
    },
 }
 
+var issueViewPMO = {
+   init: function (){
+      /**
+       * Skrypt dziala tylko na stronach z opisem taska
+       */
+      if(! /\/browse\/PMO-\d+/.test(window.location.pathname))
+      {
+         return false;
+      }
+      tools.injectFunction(issueViewPMO.mergeDates);
+   },
+
+   /**
+    * Łączy daty z lewej kolumny z danymi w zakładkach poszczególnych faz
+    */
+   mergeDates: function (){
+
+      $=window.jQuery;
+      $.fn.reverse = [].reverse;
+      $("#customfieldmodule .mod-content .tabwrap ul li:contains('Faza ')").each(function(index){
+         f_index=index+1;
+         f_tab=$(this).attr("id").match(/\d+$/)[0]
+         f_tab=$("#tab" + f_tab)
+
+         $("#datesmodule .mod-content ul li dl:contains('fazy "+ f_index +"')").reverse().each(function(index){
+            f_date_name=$(this).children("dt").text().trim();
+            f_date_value=$(this).children("dd").text().trim();
+
+            new_date=document.createElement("li");
+            new_date.setAttribute('class', 'item');
+            new_date.innerHTML='<div class="wrap"><strong class="name" >'+f_date_name+'</strong><div class="value type-textarea">'+f_date_value+'</div></div>';
+
+            f_tab.prepend(new_date);
+
+         }).remove()
+      })
+   },
+}
+
 /**
  * Kilka pomocnych metod
  */
@@ -268,7 +309,7 @@ var tools = {
       // Define GM_addStyle for compatibility with opera 
       // http://www.howtocreate.co.uk/operaStuff/userjs/aagmfunctions.js
       if(typeof GM_addStyle == "undefined"){
-         this.GM_addStyle=function (css){
+         window.GM_addStyle=function (css){
             var heads = document.getElementsByTagName("head");
             if(heads.length > 0){
                var node = document.createElement("style");
@@ -290,3 +331,4 @@ tools.browsersCompatibility();
  * Zmiany wyłącznie dla strony widoku taska
  */
 issueView.init();
+issueViewPMO.init();
