@@ -211,18 +211,19 @@ var issueView = {
        * to je wywalamy :)
        */
       customFieldTabs=$("#customfieldmodule div.tabwrap");
-      customField=$("#customfieldmodule div.mod-content");
-      if(removeFieldsTabs){
-         if(customField.outerHeight() - customFieldTabs.outerHeight() < 200){
+      if(customFieldTabs.length > 0)
+      {
+         customField=$("#customfieldmodule div.mod-content");
+         if(removeFieldsTabs && customField.outerHeight() - customFieldTabs.outerHeight() < 200){
             customFieldTabs.remove();
+         } else{
+            /**
+             * JIRA ma buga. Domyslnie pokazuje tekst
+             * ze wszystkich zakladek
+             * Wlaczmy wiec pierwsza z nich
+             */
+            showTab(1);
          }
-      } else{
-         /**
-          * JIRA ma buga. Domyslnie pokazuje tekst
-          * ze wszystkich zakladek
-          * Wlaczmy wiec pierwsza z nich
-          */
-         showTab(1);
       }
 
       /**
